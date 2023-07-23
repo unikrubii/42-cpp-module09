@@ -6,7 +6,7 @@ Btc::Btc(): _fileName( "" ) {
 
 Btc::Btc( std::string fileName ): _fileName( fileName ) {
 	this->readFile( fileName, this->_data );
-	this->readFile( "exchangeRate.csv", this->_exchangeRate );
+	this->readFile( "data.csv", this->_exchangeRate );
 }
 
 Btc::Btc( Btc const & src ) {
@@ -35,12 +35,45 @@ std::string Btc::getExtension( std::string filename ) {
 	return extension;
 }
 
-int Btc::getExchangeRate( std::string date ) {
-	...
+float Btc::getExchangeRate( std::string date ) {
+	std::map< int, std::pair<std::string, float> >::iterator it = this->_exchangeRate.begin();
+	while ( it != this->_exchangeRate.end() ) {
+		std::string dateStr = it->second.first;
+		if ( dateStr == date ) {
+			return it->second.second;
+		}
+		else {
+			int yearInput = std::atoi( date.substr( 0, 4 ).c_str() );
+			int monthInput = std::atoi( date.substr( 5, 2 ).c_str() );
+			int dayInput = std::atoi( date.substr( 8, 2 ).c_str() );
+			int yearStr = std::atoi( dateStr.substr( 0, 4 ).c_str() );
+			int monthStr = std::atoi( dateStr.substr( 5, 2 ).c_str() );
+			int dayStr = std::atoi( dateStr.substr( 8, 2 ).c_str() );
+			if ( yearInput < yearStr ) {
+				it--;
+				return it->second.second;
+			}
+			else if ( yearInput == yearStr ) {
+				if ( monthInput < monthStr ) {
+					it--;
+					return it->second.second;
+				}
+				else if ( monthInput == monthStr ) {
+					if ( dayInput < dayStr ) {
+						it--;
+						return it->second.second;
+					}
+				}
+			}
+		}
+		it++;
+	}
+	return 0;
 }
 
 // Member functions
 void Btc::readFile( std::string filename, std::map< int, std::pair<std::string, float> > & map ) {
+	std::cout << "Reading file: " << filename << std::endl;
 	std::ifstream file(filename);
 	if ( !file.is_open() ) {
 		throw std::runtime_error("File not found");
@@ -151,6 +184,7 @@ void Btc::printData( void ) {
 			std::cout << "Error: too large number." << std::endl;
 			continue;
 		}
+		float rate = this->getExchangeRate( date );
 		std::cout << date << " => " << price << " = " << price * rate << std::endl;
 	}
 }

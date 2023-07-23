@@ -34,7 +34,7 @@ class Btc
 		Btc & operator=( Btc const & rhs );
 
 		// Getters
-		int getExchangeRate( std::string date );
+		float getExchangeRate( std::string date );
 		std::string getExtension( std::string filename );
 
 		// Member functions
